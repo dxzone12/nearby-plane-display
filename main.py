@@ -9,9 +9,9 @@ def parse_args():
     
     parser.add_argument("latitude", type=float, help="Latitude of the center point")
     parser.add_argument("longitude", type=float, help="Longitude of the center point")
-    parser.add_argument("-h", "--hostname", type=str, default="localhost", help="Hostname of the readsb api endpoint (default: localhost)")
+    parser.add_argument("-H", "--hostname", type=str, default="localhost", help="Hostname of the readsb api endpoint (default: localhost)")
     parser.add_argument("-p", "--port", type=int, default=54321, help="Port of the readsb api endpoint (default: 54321)")
-    parser.add_argument("-r", "--radius", type=float, default=150, help="Radius of the circle in kilometers (default: 150 nmi)")
+    parser.add_argument("-r", "--radius", type=int, default=150, help="Radius of the circle in kilometers (default: 150 nmi)")
     
     return parser.parse_args()
 
