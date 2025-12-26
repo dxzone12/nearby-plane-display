@@ -3,6 +3,7 @@ import requests
 import tkinter as tk
 import tkinter.ttk as ttk
 from PlaneDetails import PlaneDetails
+from PlaneDetailsFrame import PlaneDetailsFrame
 
 def parse_args():
     parser = argparse.ArgumentParser(prog="Nearby Plane Display",
@@ -17,6 +18,7 @@ def parse_args():
     return parser.parse_args()
 
 def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
+    print(plane_data_json)
     if not isinstance(plane_data_json, dict):
         raise TypeError("Input must be a dictionary representing plane data in JSON format.")
     
@@ -24,20 +26,30 @@ def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
         return None
     
     closest_plane = min(plane_data_json["aircraft"], key=lambda x: x["dst"])
+
+    if not isinstance(closest_plane, dict):
+        raise TypeError("Each plane entry must be a dictionary.")
+
     return PlaneDetails(
-        call_sign=closest_plane["flight"],
-        squawk=closest_plane["squawk"],
-        registration=closest_plane["r"],
-        model=closest_plane["t"],
-        model_long=closest_plane["desc"],
-        airline=closest_plane["ownOp"],
-        altitude=closest_plane["alt_baro"],
-        altitude_rate=closest_plane["baro_rate"],
-        ground_speed=closest_plane["gs"],
+        call_sign=closest_plane.get("flight", "Unknown"),
+        squawk=closest_plane.get("squawk", "Unknown"),
+        registration=closest_plane.get("r", "Unknown"),
+        model=closest_plane.get("t", "Unknown"),
+        model_long=closest_plane.get("desc", "Unknown"),
+        airline=closest_plane.get("ownOp", "Unknown"),
+        altitude=closest_plane.get("alt_baro", 0),
+        altitude_rate=closest_plane.get("baro_rate", 0),
+        ground_speed=closest_plane.get("gs", 0.0),
         distance_from_center=closest_plane["dst"],
         pos_received_ago=closest_plane["seen_pos"],
         plane_seen_ago=closest_plane["seen"]
     )
+
+def fill_right_frame_with_details(frame: ttk.Frame, plane_details: PlaneDetails | None):
+    if plane_details is not None:
+        no_plane_label = ttk.Label(master=frame, text="No planes found in the specified area.", anchor=tk.CENTER)
+        no_plane_label.grid(row=0, column=0, columnspan=2, sticky="nsew")
+        return
 
 def main():
     args = parse_args()
@@ -60,14 +72,18 @@ def main():
     left_frame = ttk.Frame(master=window)
     left_frame.grid(row=0, column=0, sticky="nsew")
 
-    right_frame = ttk.Frame(master=window)
-    right_frame.grid(row=0, column=1, sticky="nsew")
-
     left_frame.columnconfigure(0, weight=1)
     left_frame.rowconfigure(0, weight=1)
     image_label = ttk.Label(master=left_frame, text="no image found", anchor=tk.CENTER, borderwidth=1, relief=tk.SUNKEN)
     image_label.grid(row=0, column=0, sticky="nsew")
 
+    right_frame = ttk.Frame(master=window)
+    right_frame.grid(row=0, column=1, sticky="nsew")
+    details_frame = PlaneDetailsFrame(right_frame)
+
+    fill_right_frame_with_details(right_frame, plane_deets)
+
+    window.bind("<Escape>", lambda e: window.destroy())
     window.mainloop()
 
 if __name__ == "__main__":
