@@ -80,6 +80,9 @@ def main():
     
     details_frame = PlaneDetailsFrame(right_frame)
 
+    style = ttk.Style()
+    style.configure("TLabel", font=("Roboto", 20))
+
     window.after(0, get_and_update_plane_details, url, details_frame)
 
     window.bind("<Escape>", lambda e: window.destroy())
