@@ -45,12 +45,6 @@ def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
         plane_seen_ago=closest_plane["seen"]
     )
 
-def fill_right_frame_with_details(frame: ttk.Frame, plane_details: PlaneDetails | None):
-    if plane_details is not None:
-        no_plane_label = ttk.Label(master=frame, text="No planes found in the specified area.", anchor=tk.CENTER)
-        no_plane_label.grid(row=0, column=0, columnspan=2, sticky="nsew")
-        return
-
 def main():
     args = parse_args()
 
@@ -70,18 +64,18 @@ def main():
     window.rowconfigure(0, weight=1, minsize=100)
 
     left_frame = ttk.Frame(master=window)
-    left_frame.grid(row=0, column=0, sticky="nsew")
+    left_frame.grid(row=0, column=0, sticky=tk.NSEW)
 
     left_frame.columnconfigure(0, weight=1)
     left_frame.rowconfigure(0, weight=1)
     image_label = ttk.Label(master=left_frame, text="no image found", anchor=tk.CENTER, borderwidth=1, relief=tk.SUNKEN)
-    image_label.grid(row=0, column=0, sticky="nsew")
+    image_label.grid(row=0, column=0, sticky=tk.NSEW)
 
     right_frame = ttk.Frame(master=window)
-    right_frame.grid(row=0, column=1, sticky="nsew")
+    right_frame.grid(row=0, column=1, sticky=tk.NSEW)
     details_frame = PlaneDetailsFrame(right_frame)
 
-    fill_right_frame_with_details(right_frame, plane_deets)
+    details_frame.update_details(plane_deets)
 
     window.bind("<Escape>", lambda e: window.destroy())
     window.mainloop()
