@@ -5,6 +5,9 @@ import tkinter.ttk as ttk
 from PlaneDetails import PlaneDetails
 from PlaneDetailsFrame import PlaneDetailsFrame
 
+current_plane_deets: PlaneDetails | None = None
+window: tk.Tk  = tk.Tk()
+
 def parse_args():
     parser = argparse.ArgumentParser(prog="Nearby Plane Display",
                                      description="Displays nearby planes based on given coordinates.")
@@ -45,17 +48,18 @@ def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
         plane_seen_ago=closest_plane["seen"]
     )
 
+def get_and_update_plane_details(url: str, frame: PlaneDetailsFrame) -> PlaneDetails | None:
+    resp = requests.get(url)
+    response_json = resp.json()
+    current_plane_deets = get_closest_plain_deets(response_json)
+    frame.update_details(current_plane_deets)
+    window.after(1000, get_and_update_plane_details, url, frame)
+
 def main():
     args = parse_args()
 
     url = f"http://{args.hostname}:{args.port}/?circle={args.latitude},{args.longitude},{args.radius}&filter_with_pos"
     
-    resp = requests.get(url)
-    response_json = resp.json()
-    plane_deets = get_closest_plain_deets(response_json)
-    print(plane_deets)
-
-    window = tk.Tk()
     window.title("Nearby Plane Display")
     # window.attributes("-fullscreen", True)
     
@@ -73,9 +77,10 @@ def main():
 
     right_frame = ttk.Frame(master=window)
     right_frame.grid(row=0, column=1, sticky=tk.NSEW)
+    
     details_frame = PlaneDetailsFrame(right_frame)
 
-    details_frame.update_details(plane_deets)
+    window.after(0, get_and_update_plane_details, url, details_frame)
 
     window.bind("<Escape>", lambda e: window.destroy())
     window.mainloop()

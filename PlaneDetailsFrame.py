@@ -51,10 +51,25 @@ class PlaneDetailsFrame:
         self._position_received_ago_label.grid(row=11, column=1, sticky=tk.NSEW, padx=5)
         self._plane_seen_ago_label = ttk.Label(master=self.frame, text="", anchor=tk.W)
         self._plane_seen_ago_label.grid(row=12, column=1, sticky=tk.NSEW, padx=5)
+    
+    def empty_details(self):
+        self._callsign_label["text"] = "No planes found in the specified area."
+        self._airline_label["text"] = ""
+        self._route_label["text"] = ""
+        self._Model_label["text"] = ""
+        self._model_long_label["text"] = ""
+        self._squawk_label["text"] = ""
+        self._rego_label["text"] = ""
+        self._alt_label["text"] = ""
+        self._alt_rate_label["text"] = ""
+        self._ground_speed_label["text"] = ""
+        self._distance_from_center_label["text"] = ""
+        self._position_received_ago_label["text"] = ""
+        self._plane_seen_ago_label["text"] = ""
 
     def update_details(self, plane_details: PlaneDetails | None):
         if plane_details is None:
-            self._callsign_label["text"] = "No planes found in the specified area."
+            self.empty_details()
             return
         
         self._callsign_label["text"] = plane_details.call_sign
