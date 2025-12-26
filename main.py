@@ -2,8 +2,7 @@ import argparse
 import requests
 import tkinter as tk
 import tkinter.ttk as ttk
-from DetailsDisplay import DetailsDisplay
-
+from PlaneDetails import PlaneDetails
 
 def parse_args():
     parser = argparse.ArgumentParser(prog="Nearby Plane Display",
@@ -17,11 +16,39 @@ def parse_args():
     
     return parser.parse_args()
 
+def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
+    if not isinstance(plane_data_json, dict):
+        raise TypeError("Input must be a dictionary representing plane data in JSON format.")
+    
+    if plane_data_json["resultCount"] < 1:
+        return None
+    
+    closest_plane = min(plane_data_json["aircraft"], key=lambda x: x["dst"])
+    return PlaneDetails(
+        call_sign=closest_plane["flight"],
+        squawk=closest_plane["squawk"],
+        registration=closest_plane["r"],
+        model=closest_plane["t"],
+        model_long=closest_plane["desc"],
+        airline=closest_plane["ownOp"],
+        altitude=closest_plane["alt_baro"],
+        altitude_rate=closest_plane["baro_rate"],
+        ground_speed=closest_plane["gs"],
+        distance_from_center=closest_plane["dst"],
+        pos_received_ago=closest_plane["seen_pos"],
+        plane_seen_ago=closest_plane["seen"]
+    )
+
 def main():
     args = parse_args()
 
     url = f"http://{args.hostname}:{args.port}/?circle={args.latitude},{args.longitude},{args.radius}&filter_with_pos"
     
+    resp = requests.get(url)
+    response_json = resp.json()
+    plane_deets = get_closest_plain_deets(response_json)
+    print(plane_deets)
+
     window = tk.Tk()
     window.title("Nearby Plane Display")
     # window.attributes("-fullscreen", True)
@@ -36,19 +63,12 @@ def main():
     right_frame = ttk.Frame(master=window)
     right_frame.grid(row=0, column=1, sticky="nsew")
 
-    details_frame = DetailsDisplay(right_frame)
-
     left_frame.columnconfigure(0, weight=1)
     left_frame.rowconfigure(0, weight=1)
     image_label = ttk.Label(master=left_frame, text="no image found", anchor=tk.CENTER, borderwidth=1, relief=tk.SUNKEN)
     image_label.grid(row=0, column=0, sticky="nsew")
 
     window.mainloop()
-
-    # resp = requests.get(url)
-    # response_json = resp.json()
-    # print(response_json)
-
 
 if __name__ == "__main__":
     main()
