@@ -9,7 +9,7 @@ class PlaneDetailsFrame:
         self.frame.columnconfigure(1, weight=1)
         for i in range(13):
             self.frame.rowconfigure(i, weight=1)
-        
+
         # Initialise all the labels
         ttk.Label(master=self.frame, text="Callsign:", anchor=tk.W).grid(row=0, column=0, sticky=tk.NSEW, pady=2.5)
         ttk.Label(master=self.frame, text="Airline:", anchor=tk.W).grid(row=1, column=0, sticky=tk.NSEW, pady=2.5)
@@ -51,7 +51,7 @@ class PlaneDetailsFrame:
         self._position_received_ago_label.grid(row=11, column=1, sticky=tk.NSEW, padx=5)
         self._plane_seen_ago_label = ttk.Label(master=self.frame, text="", anchor=tk.W)
         self._plane_seen_ago_label.grid(row=12, column=1, sticky=tk.NSEW, padx=5)
-    
+
     def empty_details(self):
         self._callsign_label["text"] = "No planes found in the specified area."
         self._airline_label["text"] = ""
@@ -71,7 +71,7 @@ class PlaneDetailsFrame:
         if plane_details is None:
             self.empty_details()
             return
-        
+
         self._callsign_label["text"] = plane_details.call_sign
         self._airline_label["text"] = plane_details.airline
         self._route_label["text"] = "Not Supported Yet"

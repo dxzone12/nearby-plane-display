@@ -11,23 +11,23 @@ window: tk.Tk  = tk.Tk()
 def parse_args():
     parser = argparse.ArgumentParser(prog="Nearby Plane Display",
                                      description="Displays nearby planes based on given coordinates.")
-    
+
     parser.add_argument("latitude", type=float, help="Latitude of the center point")
     parser.add_argument("longitude", type=float, help="Longitude of the center point")
     parser.add_argument("-H", "--hostname", type=str, default="localhost", help="Hostname of the readsb api endpoint (default: localhost)")
     parser.add_argument("-p", "--port", type=int, default=54321, help="Port of the readsb api endpoint (default: 54321)")
     parser.add_argument("-r", "--radius", type=int, default=150, help="Radius of the circle in kilometers (default: 150 nmi)")
-    
+
     return parser.parse_args()
 
 def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
     print(plane_data_json)
     if not isinstance(plane_data_json, dict):
         raise TypeError("Input must be a dictionary representing plane data in JSON format.")
-    
+
     if plane_data_json["resultCount"] < 1:
         return None
-    
+
     closest_plane = min(plane_data_json["aircraft"], key=lambda x: x["dst"])
 
     if not isinstance(closest_plane, dict):
@@ -59,10 +59,10 @@ def main():
     args = parse_args()
 
     url = f"http://{args.hostname}:{args.port}/?circle={args.latitude},{args.longitude},{args.radius}&filter_with_pos"
-    
+
     window.title("Nearby Plane Display")
     # window.attributes("-fullscreen", True)
-    
+
     window.columnconfigure(0, weight=1, minsize=100)
     window.columnconfigure(1, weight=2, minsize=100)
     window.rowconfigure(0, weight=1, minsize=100)
