@@ -21,7 +21,6 @@ def parse_args():
     return parser.parse_args()
 
 def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
-    print(plane_data_json)
     if not isinstance(plane_data_json, dict):
         raise TypeError("Input must be a dictionary representing plane data in JSON format.")
 
@@ -61,7 +60,8 @@ def main():
     url = f"http://{args.hostname}:{args.port}/?circle={args.latitude},{args.longitude},{args.radius}&filter_with_pos"
 
     window.title("Nearby Plane Display")
-    # window.attributes("-fullscreen", True)
+    # window.geometry("800x480")
+    window.attributes("-fullscreen", True)
 
     window.columnconfigure(0, weight=1, minsize=100)
     window.columnconfigure(1, weight=2, minsize=100)
