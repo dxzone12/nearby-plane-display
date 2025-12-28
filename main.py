@@ -2,6 +2,7 @@ import argparse
 import requests
 import tkinter as tk
 import tkinter.ttk as ttk
+import tkinter.font as tkfont
 from PlaneDetails import PlaneDetails
 from PlaneDetailsFrame import PlaneDetailsFrame
 
@@ -63,6 +64,8 @@ def main():
     # window.geometry("800x480")
     window.attributes("-fullscreen", True)
 
+    print(tkfont.families())
+
     window.columnconfigure(0, weight=1, minsize=100)
     window.columnconfigure(1, weight=2, minsize=100)
     window.rowconfigure(0, weight=1, minsize=100)
@@ -81,7 +84,6 @@ def main():
     details_frame = PlaneDetailsFrame(right_frame)
 
     style = ttk.Style(window)
-    print(style.lookup("TLabel", "font"))
     style.configure("TLabel", font=("times", 20))
     style.configure("NPD.Label", font=("TKDefaultFont", 40, "bold"))
 
