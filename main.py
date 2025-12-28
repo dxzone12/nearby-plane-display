@@ -64,8 +64,6 @@ def main():
     # window.geometry("800x480")
     window.attributes("-fullscreen", True)
 
-    print(tkfont.families())
-
     window.columnconfigure(0, weight=1, minsize=100)
     window.columnconfigure(1, weight=2, minsize=100)
     window.rowconfigure(0, weight=1, minsize=100)
