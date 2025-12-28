@@ -64,9 +64,10 @@ def main():
     # window.geometry("800x480")
     window.attributes("-fullscreen", True)
 
-    window.columnconfigure(0, weight=1, minsize=100)
-    window.columnconfigure(1, weight=2, minsize=100)
-    window.rowconfigure(0, weight=1, minsize=100)
+    window.columnconfigure(0, weight=1, minsize=200)
+    window.columnconfigure(1, weight=1, minsize=100)
+    window.rowconfigure(0, weight=2, minsize=100)
+    window.rowconfigure(1, weight=1, minsize=100)
 
     left_frame = ttk.Frame(master=window)
     left_frame.grid(row=0, column=0, sticky=tk.NSEW)
@@ -78,8 +79,11 @@ def main():
 
     right_frame = ttk.Frame(master=window)
     right_frame.grid(row=0, column=1, sticky=tk.NSEW)
+
+    bottom_frame = ttk.Frame(master=window)
+    bottom_frame.grid(row=1, column=0, columnspan=2, sticky=tk.NSEW)
     
-    details_frame = PlaneDetailsFrame(right_frame)
+    details_frame = PlaneDetailsFrame(right_frame, bottom_frame)
 
     style = ttk.Style(window)
     style.configure("TLabel", font=("helvetica", 20))

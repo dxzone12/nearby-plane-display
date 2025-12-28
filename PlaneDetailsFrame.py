@@ -3,45 +3,58 @@ import tkinter.ttk as ttk
 from PlaneDetails import PlaneDetails
 
 class PlaneDetailsFrame:
-    def __init__(self, parent: ttk.Frame):
-        self.frame = parent
-        self.frame.columnconfigure(0, weight=1)
-        self.frame.columnconfigure(1, weight=1)
-        for i in range(10):
-            self.frame.rowconfigure(i, weight=1)
+    def __init__(self, title_frame: ttk.Frame, bottom_frame: ttk.Frame):
+        self._title_frame = title_frame
+        self._title_frame.columnconfigure(0, weight=1)
+        self._title_frame.columnconfigure(1, weight=1)
+        for i in range(4):
+            self._title_frame.rowconfigure(i, weight=1)
+        
+        self._bottom_frame = bottom_frame
+        self._bottom_frame.columnconfigure(0, weight=1)
+        self._bottom_frame.columnconfigure(1, weight=1)
+        self._bottom_frame.columnconfigure(2, weight=1)
+        self._bottom_frame.columnconfigure(3, weight=1)
+        for i in range(4):
+            self._bottom_frame.rowconfigure(i, weight=1)
 
-        # Initialise all the labels
-        ttk.Label(master=self.frame, text="Callsign:", anchor=tk.W).grid(row=0, column=0, sticky=tk.NSEW, pady=2.5)
-        ttk.Label(master=self.frame, text="Airline:", anchor=tk.W).grid(row=1, column=0, sticky=tk.NSEW, pady=2.5)
-        ttk.Label(master=self.frame, text="Route:", anchor=tk.W).grid(row=2, column=0, sticky=tk.NSEW, pady=2.5)
-        ttk.Label(master=self.frame, text="Model:", anchor=tk.W).grid(row=3, column=0, sticky=tk.NSEW, pady=2.5)
-        ttk.Label(master=self.frame, text="Squawk:", anchor=tk.W).grid(row=4, column=0, sticky=tk.NSEW, pady=2.5)
-        ttk.Label(master=self.frame, text="Registration:", anchor=tk.W).grid(row=5, column=0, sticky=tk.NSEW, pady=2.5)
-        ttk.Label(master=self.frame, text="Altitude:", anchor=tk.W).grid(row=6, column=0, sticky=tk.NSEW, pady=2.5)
-        ttk.Label(master=self.frame, text="Ground Speed:", anchor=tk.W).grid(row=7, column=0, sticky=tk.NSEW, pady=2.5)
-        ttk.Label(master=self.frame, text="Distance:", anchor=tk.W).grid(row=8, column=0, sticky=tk.NSEW, pady=2.5)
-        ttk.Label(master=self.frame, text="Last seen:", anchor=tk.W).grid(row=9, column=0, sticky=tk.NSEW, pady=2.5)
+        # Initialise title frame
+        ttk.Label(master=self._title_frame, text="Callsign:", anchor=tk.W).grid(row=0, column=0, sticky=tk.NSEW, padx=3)
+        ttk.Label(master=self._title_frame, text="Airline:", anchor=tk.W).grid(row=1, column=0, sticky=tk.NSEW, padx=3)
+        ttk.Label(master=self._title_frame, text="Route:", anchor=tk.W).grid(row=2, column=0, sticky=tk.NSEW, padx=3)
+        ttk.Label(master=self._title_frame, text="Model:", anchor=tk.W).grid(row=3, column=0, sticky=tk.NSEW, padx=3)
 
-        self._callsign_label = ttk.Label(master=self.frame, text="", anchor=tk.W)
+        self._callsign_label = ttk.Label(master=self._title_frame, text="", anchor=tk.W)
         self._callsign_label.grid(row=0, column=1, sticky=tk.NSEW, padx=5)
-        self._airline_label = ttk.Label(master=self.frame, text="", anchor=tk.W)
+        self._airline_label = ttk.Label(master=self._title_frame, text="", anchor=tk.W)
         self._airline_label.grid(row=1, column=1, sticky=tk.NSEW, padx=5)
-        self._route_label = ttk.Label(master=self.frame, text="", anchor=tk.W)
+        self._route_label = ttk.Label(master=self._title_frame, text="", anchor=tk.W)
         self._route_label.grid(row=2, column=1, sticky=tk.NSEW, padx=5)
-        self._Model_label = ttk.Label(master=self.frame, text="", anchor=tk.W)
+        self._Model_label = ttk.Label(master=self._title_frame, text="", anchor=tk.W)
         self._Model_label.grid(row=3, column=1, sticky=tk.NSEW, padx=5)
-        self._squawk_label = ttk.Label(master=self.frame, text="", anchor=tk.W)
-        self._squawk_label.grid(row=4, column=1, sticky=tk.NSEW, padx=5)
-        self._rego_label = ttk.Label(master=self.frame, text="", anchor=tk.W)
-        self._rego_label.grid(row=5, column=1, sticky=tk.NSEW, padx=5)
-        self._alt_label = ttk.Label(master=self.frame, text="", anchor=tk.W)
-        self._alt_label.grid(row=6, column=1, sticky=tk.NSEW, padx=5)
-        self._ground_speed_label = ttk.Label(master=self.frame, text="", anchor=tk.W)
-        self._ground_speed_label.grid(row=7, column=1, sticky=tk.NSEW, padx=5)
-        self._distance_from_center_label = ttk.Label(master=self.frame, text="", anchor=tk.W)
-        self._distance_from_center_label.grid(row=8, column=1, sticky=tk.NSEW, padx=5)
-        self._last_seen_label = ttk.Label(master=self.frame, text="", anchor=tk.W)
-        self._last_seen_label.grid(row=9, column=1, sticky=tk.NSEW, padx=5)
+
+        # Initialise bottom frame
+        ttk.Label(master=self._bottom_frame, text="Altitude:", anchor=tk.W).grid(row=0, column=0, sticky=tk.NSEW)
+        ttk.Label(master=self._bottom_frame, text="Ground Speed:", anchor=tk.W).grid(row=1, column=0, sticky=tk.NSEW)
+        ttk.Label(master=self._bottom_frame, text="Distance:", anchor=tk.W).grid(row=2, column=0, sticky=tk.NSEW)
+
+        ttk.Label(master=self._bottom_frame, text="Squawk:", anchor=tk.W).grid(row=0, column=2, sticky=tk.NSEW)
+        ttk.Label(master=self._bottom_frame, text="Registration:", anchor=tk.W).grid(row=1, column=2, sticky=tk.NSEW)
+        ttk.Label(master=self._bottom_frame, text="Last seen:", anchor=tk.W).grid(row=2, column=2, sticky=tk.NSEW)
+
+        self._alt_label = ttk.Label(master=self._bottom_frame, text="", anchor=tk.W)
+        self._alt_label.grid(row=0, column=1, sticky=tk.NSEW, padx=5)
+        self._ground_speed_label = ttk.Label(master=self._bottom_frame, text="", anchor=tk.W)
+        self._ground_speed_label.grid(row=1, column=1, sticky=tk.NSEW, padx=5)
+        self._distance_from_center_label = ttk.Label(master=self._bottom_frame, text="", anchor=tk.W)
+        self._distance_from_center_label.grid(row=2, column=1, sticky=tk.NSEW, padx=5)
+
+        self._squawk_label = ttk.Label(master=self._bottom_frame, text="", anchor=tk.W)
+        self._squawk_label.grid(row=0, column=3, sticky=tk.NSEW, padx=5)
+        self._rego_label = ttk.Label(master=self._bottom_frame, text="", anchor=tk.W)
+        self._rego_label.grid(row=1, column=3, sticky=tk.NSEW, padx=5)
+        self._last_seen_label = ttk.Label(master=self._bottom_frame, text="", anchor=tk.W)
+        self._last_seen_label.grid(row=2, column=3, sticky=tk.NSEW, padx=5)
 
     def empty_details(self):
         self._callsign_label["text"] = "No planes found in the specified area."
@@ -73,8 +86,8 @@ class PlaneDetailsFrame:
 
     def altitude_change_indicator(self, altitude_rate: int) -> str:
         if altitude_rate > 0:
-            return " (↑)"
+            return " (▲)"
         elif altitude_rate < 0:
-            return " (↓)"
+            return " (▼)"
         else:
             return ""
