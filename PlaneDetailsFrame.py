@@ -22,7 +22,7 @@ class PlaneDetailsFrame:
         ttk.Label(master=self.frame, text="Distance From Center:", anchor=tk.W).grid(row=8, column=0, sticky=tk.NSEW, pady=2.5)
         ttk.Label(master=self.frame, text="Last seen:", anchor=tk.W).grid(row=9, column=0, sticky=tk.NSEW, pady=2.5)
 
-        self._callsign_label = ttk.Label(master=self.frame, text="", anchor=tk.W, style="NPD.Label")
+        self._callsign_label = tk.Label(master=self.frame, text="", anchor=tk.W, font=("TKDefaultFont", 8, "bold"))
         self._callsign_label.grid(row=0, column=1, sticky=tk.NSEW, padx=5)
         self._airline_label = ttk.Label(master=self.frame, text="", anchor=tk.W)
         self._airline_label.grid(row=1, column=1, sticky=tk.NSEW, padx=5)

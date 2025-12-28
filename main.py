@@ -81,6 +81,7 @@ def main():
     details_frame = PlaneDetailsFrame(right_frame)
 
     style = ttk.Style(window)
+    print(style.lookup("TLabel", "font"))
     style.configure("TLabel", font=("TKDefaultFont", 20))
     style.configure("NPD.Label", font=("TKDefaultFont", 40, "bold"))
 
