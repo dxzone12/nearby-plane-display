@@ -84,8 +84,7 @@ def main():
     details_frame = PlaneDetailsFrame(right_frame)
 
     style = ttk.Style(window)
-    style.configure("TLabel", font=("times", 20))
-    style.configure("NPD.Label", font=("TKDefaultFont", 40, "bold"))
+    style.configure("TLabel", font=("bookman", 20))
 
     window.after(0, get_and_update_plane_details, url, details_frame)
 
