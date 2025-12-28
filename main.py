@@ -82,7 +82,7 @@ def main():
 
     style = ttk.Style(window)
     print(style.lookup("TLabel", "font"))
-    style.configure("TLabel", font=("TKDefaultFont", 20))
+    style.configure("TLabel", font=("times", 20))
     style.configure("NPD.Label", font=("TKDefaultFont", 40, "bold"))
 
     window.after(0, get_and_update_plane_details, url, details_frame)
