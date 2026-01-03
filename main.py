@@ -45,7 +45,8 @@ def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
         ground_speed=closest_plane.get("gs", 0.0),
         distance_from_center=closest_plane["dst"],
         pos_received_ago=closest_plane["seen_pos"],
-        plane_seen_ago=closest_plane["seen"]
+        plane_seen_ago=closest_plane["seen"],
+        route="Not Supported Yet"  # Not supported yet
     )
 
 def get_and_update_plane_details(url: str, frame: PlaneDetailsFrame) -> PlaneDetails | None:

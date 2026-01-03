@@ -13,3 +13,4 @@ class PlaneDetails(NamedTuple):
     distance_from_center: float
     pos_received_ago: int
     plane_seen_ago: int
+    route: str

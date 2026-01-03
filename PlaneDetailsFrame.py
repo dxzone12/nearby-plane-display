@@ -75,7 +75,7 @@ class PlaneDetailsFrame:
 
         self._callsign_label["text"] = plane_details.call_sign
         self._airline_label["text"] = plane_details.airline
-        self._route_label["text"] = "Not Supported Yet"
+        self._route_label["text"] = plane_details.route
         self._Model_label["text"] = f"{plane_details.model_long} ({plane_details.model})"
         self._squawk_label["text"] = plane_details.squawk
         self._rego_label["text"] = plane_details.registration
