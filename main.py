@@ -1,13 +1,19 @@
 import argparse
+from pathlib import Path
 import requests
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.font as tkfont
 from PlaneDetails import PlaneDetails
 from PlaneDetailsFrame import PlaneDetailsFrame
+import re
 
 current_plane_deets: PlaneDetails | None = None
 window: tk.Tk  = tk.Tk()
+
+standing_data_base_dir: Path
+
+airline_lookup_cache: dict[str, str] = {}
 
 def parse_args():
     parser = argparse.ArgumentParser(prog="Nearby Plane Display",
@@ -18,8 +24,40 @@ def parse_args():
     parser.add_argument("-H", "--hostname", type=str, default="localhost", help="Hostname of the readsb api endpoint (default: localhost)")
     parser.add_argument("-p", "--port", type=int, default=54321, help="Port of the readsb api endpoint (default: 54321)")
     parser.add_argument("-r", "--radius", type=int, default=150, help="Radius of the circle in kilometers (default: 150 nmi)")
+    parser.add_argument("-d", "--data_dir", type=str, default="/usr/local/share/npd/standing-data-main", help="Path to standing data directory")
 
     return parser.parse_args()
+
+def normalise_callsign(callsign: str) -> tuple[str, str] | None:
+    callsign = callsign.strip()
+    match = re.match(r"^(?P<code>[A-Z]{2,3}|[A-Z][0-9]|[0-9][A-Z])(?P<number>\d[A-Z0-9]*)", callsign)
+    if match:
+        code = match.group("code")
+        number = match.group("number").lstrip("0")
+        if not number or number.isalpha():
+            number = "0" + number
+        return (code, number)
+    return None
+
+def lookup_airline_local_db(normalised_callsign: tuple[str, str]) -> str | None:
+    airline_code = normalised_callsign[0]
+
+    if airline_code in airline_lookup_cache:
+        return airline_lookup_cache[airline_code]
+
+    airline_csv = standing_data_base_dir / "airlines" / "schema-01" / "airlines.csv"
+    if airline_csv.exists() and airline_csv.is_file():
+        with airline_csv.open() as f:
+            for line in f:
+                if line.startswith(airline_code):
+                    looked_up_airline = line.split(",")[1].strip()
+                    airline_lookup_cache[airline_code] = looked_up_airline
+                    print(looked_up_airline)
+                    return looked_up_airline
+    return None
+
+def lookup_route_local_db(normalised_callsign: tuple[str, str]) -> str | None:
+    pass
 
 def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
     if not isinstance(plane_data_json, dict):
@@ -32,21 +70,37 @@ def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
 
     if not isinstance(closest_plane, dict):
         raise TypeError("Each plane entry must be a dictionary.")
+    
+    callsign = closest_plane.get("flight", None)
+    airline = closest_plane.get("ownOp", None)
+
+    normalised_callsign = normalise_callsign(callsign) if callsign is not None else None
+
+    route = lookup_route_local_db(normalised_callsign) if normalised_callsign is not None else None
+
+    # Attempt to resolve airline if it wasn't supplied
+    if airline is None and normalised_callsign is not None:
+        airline = lookup_airline_local_db(normalised_callsign)
+    if airline is None:
+        airline = "Unknown"
+
+    if callsign is None:
+        callsign = "Unknown"
 
     return PlaneDetails(
-        call_sign=closest_plane.get("flight", "Unknown"),
+        call_sign=callsign,
         squawk=closest_plane.get("squawk", "Unknown"),
         registration=closest_plane.get("r", "Unknown"),
         model=closest_plane.get("t", "Unknown"),
         model_long=closest_plane.get("desc", "Unknown"),
-        airline=closest_plane.get("ownOp", "Unknown"),
+        airline=airline,
         altitude=closest_plane.get("alt_baro", 0),
         altitude_rate=closest_plane.get("baro_rate", 0),
         ground_speed=closest_plane.get("gs", 0.0),
         distance_from_center=closest_plane["dst"],
         pos_received_ago=closest_plane["seen_pos"],
         plane_seen_ago=closest_plane["seen"],
-        route="Not Supported Yet"  # Not supported yet
+        route=route if route is not None else "Not Supported Yet"
     )
 
 def get_and_update_plane_details(url: str, frame: PlaneDetailsFrame) -> PlaneDetails | None:
@@ -58,6 +112,8 @@ def get_and_update_plane_details(url: str, frame: PlaneDetailsFrame) -> PlaneDet
 
 def main():
     args = parse_args()
+    global standing_data_base_dir
+    standing_data_base_dir= Path(args.data_dir)
 
     url = f"http://{args.hostname}:{args.port}/?circle={args.latitude},{args.longitude},{args.radius}&filter_with_pos"
 

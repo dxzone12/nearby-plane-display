@@ -14,7 +14,7 @@ mkdir -p /usr/local/share/npd/standing-data
 echo "Downloading standing-data repo to temp file: $TMP_ZIP"
 wget -O "$TMP_ZIP" https://github.com/vradarserver/standing-data/archive/refs/heads/main.zip
 
-echo "Extracting to /usr/local/share/npd/standing-data"
+echo "Extracting to /usr/local/share/npd/standing-data-main"
 unzip -o "$TMP_ZIP" -d /usr/local/share/npd
 
 echo "Cleaning up tmp file"
