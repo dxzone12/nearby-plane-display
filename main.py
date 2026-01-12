@@ -13,7 +13,7 @@ window: tk.Tk  = tk.Tk()
 
 standing_data_base_dir: Path
 
-airline_lookup_cache: dict[str, str] = {}
+airline_lookup_cache: dict[str, str | None] = {}
 
 def parse_args():
     parser = argparse.ArgumentParser(prog="Nearby Plane Display",
@@ -39,22 +39,31 @@ def normalise_callsign(callsign: str) -> tuple[str, str] | None:
         return (code, number)
     return None
 
-def lookup_airline_local_db(normalised_callsign: tuple[str, str]) -> str | None:
+def lookup_airline_local_db(normalised_callsign: tuple[str, str], airline: str | None) -> str | None:
     airline_code = normalised_callsign[0]
 
     if airline_code in airline_lookup_cache:
         return airline_lookup_cache[airline_code]
 
+    looked_up_airline = None
     airline_csv = standing_data_base_dir / "airlines" / "schema-01" / "airlines.csv"
     if airline_csv.exists() and airline_csv.is_file():
         with airline_csv.open() as f:
             for line in f:
-                if line.startswith(airline_code):
-                    looked_up_airline = line.split(",")[1].strip()
-                    airline_lookup_cache[airline_code] = looked_up_airline
-                    print(looked_up_airline)
-                    return looked_up_airline
-    return None
+                line_parts = line.split(",")
+                if len(line_parts) < 2:
+                    continue
+                if line_parts[0].strip() == airline_code:
+                    looked_up_airline = line_parts[1].strip()
+                    break
+    
+    # Now that we have the given airline and the looked up one we cache and use the shortest
+    looked_up_length = len(looked_up_airline) if looked_up_airline is not None else 10_000
+    passed_in_length = len(airline) if airline is not None else 10_000
+
+    best_option = looked_up_airline if looked_up_length < passed_in_length else airline
+    airline_lookup_cache[airline_code] = best_option
+    return best_option
 
 def lookup_route_local_db(normalised_callsign: tuple[str, str]) -> str | None:
     pass
@@ -79,8 +88,8 @@ def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
     route = lookup_route_local_db(normalised_callsign) if normalised_callsign is not None else None
 
     # Attempt to resolve airline if it wasn't supplied
-    if airline is None and normalised_callsign is not None:
-        airline = lookup_airline_local_db(normalised_callsign)
+    if normalised_callsign is not None:
+        airline = lookup_airline_local_db(normalised_callsign, airline)
     if airline is None:
         airline = "Unknown"
 
