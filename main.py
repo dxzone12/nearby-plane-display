@@ -71,15 +71,21 @@ def lookup_route_local_db(normalised_callsign: tuple[str, str]) -> str | None:
 
     route_dir = standing_data_base_dir / "routes" / "schema-01" / code_component[0]
 
+    route = None
+
     all_csv = route_dir / f"{code_component}-all.csv"
     if all_csv.exists() and all_csv.is_file():
-        return read_route_from_csv(all_csv, f"{code_component}{number_component}")
+        route =read_route_from_csv(all_csv, f"{code_component}{number_component}")
 
     numbered_csv = route_dir / f"{code_component}-{number_component[0]}.csv"
     if numbered_csv.exists() and numbered_csv.is_file():
-        return read_route_from_csv(numbered_csv, f"{code_component}{number_component}")
+        route = read_route_from_csv(numbered_csv, f"{code_component}{number_component}")
 
-    return None # Neither file exists so we don't know the route
+    if route is not None:
+        airport_codes = [get_best_airport_code(x) for x in route.split("-")]
+        route = "-".join(airport_codes)
+
+    return route
 
 def read_route_from_csv(file_path: Path, normalised_callsign: str) -> str | None:
     with file_path.open() as f:
@@ -90,6 +96,22 @@ def read_route_from_csv(file_path: Path, normalised_callsign: str) -> str | None
             if line_parts[0].strip() == normalised_callsign:
                 return line_parts[4].strip()
     return None
+
+def get_best_airport_code(airport_code: str) -> str:
+    airport_csv = standing_data_base_dir / "airports" / "schema-01" / airport_code[0] / f"{airport_code[0:2]}.csv"
+    
+    with airport_csv.open() as f:
+        for line in f:
+            line_parts = line.split(",")
+            if len(line_parts) < 4:
+                continue
+            if line_parts[0].strip() == airport_code:
+                iata_code = line_parts[3].strip()
+                if iata_code:
+                    return iata_code
+                break
+    
+    return airport_code
 
 def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
     if not isinstance(plane_data_json, dict):
