@@ -66,7 +66,30 @@ def lookup_airline_local_db(normalised_callsign: tuple[str, str], airline: str |
     return best_option
 
 def lookup_route_local_db(normalised_callsign: tuple[str, str]) -> str | None:
-    pass
+    code_component = normalised_callsign[0]
+    number_component = normalised_callsign[1]
+
+    route_dir = standing_data_base_dir / "routes" / "schema-01" / code_component[0]
+
+    all_csv = route_dir / f"{code_component}-all.csv"
+    if all_csv.exists() and all_csv.is_file():
+        return read_route_from_csv(all_csv, f"{code_component}{number_component}")
+
+    numbered_csv = route_dir / f"{code_component}-{number_component[0]}.csv"
+    if numbered_csv.exists() and numbered_csv.is_file():
+        return read_route_from_csv(numbered_csv, f"{code_component}{number_component}")
+
+    return None # Neither file exists so we don't know the route
+
+def read_route_from_csv(file_path: Path, normalised_callsign: str) -> str | None:
+    with file_path.open() as f:
+        for line in f:
+            line_parts = line.split(",")
+            if len(line_parts) < 5:
+                continue
+            if line_parts[0].strip() == normalised_callsign:
+                return line_parts[4].strip()
+    return None
 
 def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
     if not isinstance(plane_data_json, dict):
@@ -90,19 +113,14 @@ def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
     # Attempt to resolve airline if it wasn't supplied
     if normalised_callsign is not None:
         airline = lookup_airline_local_db(normalised_callsign, airline)
-    if airline is None:
-        airline = "Unknown"
-
-    if callsign is None:
-        callsign = "Unknown"
 
     return PlaneDetails(
-        call_sign=callsign,
+        call_sign=callsign if callsign is not None else "Unknown",
         squawk=closest_plane.get("squawk", "Unknown"),
         registration=closest_plane.get("r", "Unknown"),
         model=closest_plane.get("t", "Unknown"),
         model_long=closest_plane.get("desc", "Unknown"),
-        airline=airline,
+        airline=airline if airline is not None else "Unknown",
         altitude=closest_plane.get("alt_baro", 0),
         altitude_rate=closest_plane.get("baro_rate", 0),
         ground_speed=closest_plane.get("gs", 0.0),
