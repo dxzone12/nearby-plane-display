@@ -14,6 +14,7 @@ window: tk.Tk  = tk.Tk()
 standing_data_base_dir: Path
 
 airline_lookup_cache: dict[str, str | None] = {}
+airport_lookup_cache: dict[str, str] = {}
 
 def parse_args():
     parser = argparse.ArgumentParser(prog="Nearby Plane Display",
@@ -99,7 +100,11 @@ def read_route_from_csv(file_path: Path, normalised_callsign: str) -> str | None
 
 def get_best_airport_code(airport_code: str) -> str:
     airport_csv = standing_data_base_dir / "airports" / "schema-01" / airport_code[0] / f"{airport_code[0:2]}.csv"
+
+    if airport_code in airport_lookup_cache:
+        return airport_lookup_cache[airport_code]
     
+    best_code = airport_code
     with airport_csv.open() as f:
         for line in f:
             line_parts = line.split(",")
@@ -108,10 +113,11 @@ def get_best_airport_code(airport_code: str) -> str:
             if line_parts[0].strip() == airport_code:
                 iata_code = line_parts[3].strip()
                 if iata_code:
-                    return iata_code
+                    best_code = iata_code
                 break
     
-    return airport_code
+    airport_lookup_cache[airport_code] = best_code
+    return best_code
 
 def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
     if not isinstance(plane_data_json, dict):
