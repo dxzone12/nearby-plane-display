@@ -20,6 +20,8 @@ airport_lookup_cache: dict[str, str] = {}
 
 photo_lookup_cache: dict[str, tuple[str | None, str | None, datetime]] = {}
 
+email_address: str
+
 def parse_args():
     parser = argparse.ArgumentParser(prog="Nearby Plane Display",
                                      description="Displays nearby planes based on given coordinates.")
@@ -30,6 +32,7 @@ def parse_args():
     parser.add_argument("-p", "--port", type=int, default=54321, help="Port of the readsb api endpoint (default: 54321)")
     parser.add_argument("-r", "--radius", type=int, default=150, help="Radius of the circle in kilometers (default: 150 nmi)")
     parser.add_argument("-d", "--data_dir", type=str, default="/usr/local/share/npd/standing-data-main", help="Path to standing data directory")
+    parser.add_argument("-e", "--email", type=str, required=True, help="Email address to use in the planespotters API User-Agent header")
 
     return parser.parse_args()
 
@@ -137,7 +140,7 @@ def get_photo_for_registration(registration: str | None) -> tuple[str | None, st
     # If not cached or cache is stale, fetch from the API
     lookup_url = f"https://api.planespotters.net/pub/photos/reg/{registration}"
     headers = {
-        "User-Agent": "Nearby Plane Display ()"
+        "User-Agent": f"Nearby Plane Display ({email_address})"
     }
     resp = requests.get(lookup_url, headers=headers)
     resp_json = cast(dict, resp.json())
@@ -217,8 +220,11 @@ def get_and_update_plane_details(url: str, frame: PlaneDetailsFrame) -> PlaneDet
 
 def main():
     args = parse_args()
+    
     global standing_data_base_dir
     standing_data_base_dir= Path(args.data_dir)
+    global email_address
+    email_address = args.email
 
     url = f"http://{args.hostname}:{args.port}/?circle={args.latitude},{args.longitude},{args.radius}&filter_with_pos"
 
