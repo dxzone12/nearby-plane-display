@@ -137,7 +137,7 @@ def get_photo_for_registration(registration: str | None) -> tuple[str | None, st
     # If not cached or cache is stale, fetch from the API
     lookup_url = f"https://api.planespotters.net/pub/photos/reg/{registration}"
     headers = {
-        "User-Agent": "Nearby Plane Display"
+        "User-Agent": "Nearby Plane Display ()"
     }
     resp = requests.get(lookup_url, headers=headers)
     resp_json = cast(dict, resp.json())
@@ -151,6 +151,7 @@ def get_photo_for_registration(registration: str | None) -> tuple[str | None, st
     recent_photo = photos[0] if photos else None
 
     if recent_photo is None:
+        print(f"No photos found for registration {registration}")
         photo_lookup_cache[registration] = (None, None, datetime.now())
         return (None, None)
     
