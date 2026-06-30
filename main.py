@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+from typing import cast
 import requests
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -7,6 +8,7 @@ import tkinter.font as tkfont
 from PlaneDetails import PlaneDetails
 from PlaneDetailsFrame import PlaneDetailsFrame
 import re
+from datetime import datetime
 
 current_plane_deets: PlaneDetails | None = None
 window: tk.Tk  = tk.Tk()
@@ -15,6 +17,8 @@ standing_data_base_dir: Path
 
 airline_lookup_cache: dict[str, str | None] = {}
 airport_lookup_cache: dict[str, str] = {}
+
+photo_lookup_cache: dict[str, tuple[str | None, str | None, datetime]] = {}
 
 def parse_args():
     parser = argparse.ArgumentParser(prog="Nearby Plane Display",
@@ -119,6 +123,46 @@ def get_best_airport_code(airport_code: str) -> str:
     airport_lookup_cache[airport_code] = best_code
     return best_code
 
+def get_photo_for_registration(registration: str | None) -> tuple[str | None, str | None]:
+    if (registration is None):
+        return (None, None)
+    
+    # Check if we have it cached
+    if registration in photo_lookup_cache:
+        cached_photo_url, cached_photo_credit, cached_timestamp = photo_lookup_cache[registration]
+        # Check if the cached entry is older than 24 hours
+        if (datetime.now() - cached_timestamp).total_seconds() < 24 * 3600:
+            return (cached_photo_url, cached_photo_credit)
+        
+    # If not cached or cache is stale, fetch from the API
+    lookup_url = f"https://api.planespotters.net/pub/photos/reg/{registration}"
+    headers = {
+        "User-Agent": "Nearby Plane Display"
+    }
+    resp = requests.get(lookup_url, headers=headers)
+    resp_json = cast(dict, resp.json())
+
+    if ("error" in resp_json):
+        print(f"Error from planespotters API: {resp_json['error']}")
+        photo_lookup_cache[registration] = (None, None, datetime.now())
+        return (None, None)
+
+    photos = resp_json.get("photos", [])
+    recent_photo = photos[0] if photos else None
+
+    if recent_photo is None:
+        photo_lookup_cache[registration] = (None, None, datetime.now())
+        return (None, None)
+    
+    credit = recent_photo.get("photographer", None)
+    thumbnail_url = recent_photo.get("thumbnail", {}).get("src", None)
+    large_thumbnail_url = recent_photo.get("thumbnail_large", {}).get("src", None)
+    resolved_url = large_thumbnail_url or thumbnail_url or None
+
+    photo_lookup_cache[registration] = (resolved_url, credit, datetime.now())
+    print(f"Fetched photo for registration {registration}: URL={resolved_url}, Credit={credit}")
+    return (resolved_url, credit)
+
 def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
     if not isinstance(plane_data_json, dict):
         raise TypeError("Input must be a dictionary representing plane data in JSON format.")
@@ -141,11 +185,14 @@ def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
     # Attempt to resolve airline if it wasn't supplied
     if normalised_callsign is not None:
         airline = lookup_airline_local_db(normalised_callsign, airline)
+    
+    registration = closest_plane.get("r", None)
+    image_url, image_credit = get_photo_for_registration(registration)
 
     return PlaneDetails(
         call_sign=callsign if callsign is not None else "Unknown",
         squawk=closest_plane.get("squawk", "Unknown"),
-        registration=closest_plane.get("r", "Unknown"),
+        registration=registration if registration is not None else "Unknown",
         model=closest_plane.get("t", "Unknown"),
         model_long=closest_plane.get("desc", "Unknown"),
         airline=airline if airline is not None else "Unknown",
@@ -155,7 +202,9 @@ def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
         distance_from_center=closest_plane["dst"],
         pos_received_ago=closest_plane["seen_pos"],
         plane_seen_ago=closest_plane["seen"],
-        route=route if route is not None else "Not Supported Yet"
+        route=route if route is not None else "Not Supported Yet",
+        image_url=image_url if image_url is not None else "",
+        image_credit=f"{image_credit} via planespotters.net" if image_credit is not None else ""
     )
 
 def get_and_update_plane_details(url: str, frame: PlaneDetailsFrame) -> PlaneDetails | None:
