@@ -9,6 +9,7 @@ from PlaneDetails import PlaneDetails
 from PlaneDetailsFrame import PlaneDetailsFrame
 import re
 from datetime import datetime
+import tempfile
 
 current_plane_deets: PlaneDetails | None = None
 window: tk.Tk  = tk.Tk()
@@ -19,6 +20,7 @@ airline_lookup_cache: dict[str, str | None] = {}
 airport_lookup_cache: dict[str, str] = {}
 
 photo_lookup_cache: dict[str, tuple[str | None, str | None, datetime]] = {}
+photo_cache_dir = tempfile.TemporaryDirectory(prefix="nearby-plane-display-")
 
 email_address: str
 
@@ -126,16 +128,35 @@ def get_best_airport_code(airport_code: str) -> str:
     airport_lookup_cache[airport_code] = best_code
     return best_code
 
+def download_photo(url: str) -> str | None:
+    try:
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
+        temp_file = tempfile.NamedTemporaryFile(
+            delete=False,
+            delete_on_close=False,
+            dir=photo_cache_dir.name,
+            prefix="photo-",
+            suffix=".jpg",
+        )
+        with open(temp_file.name, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        return temp_file.name
+    except Exception as e:
+        print(f"Error downloading photo from {url}: {e}")
+        return None
+
 def get_photo_for_registration(registration: str | None) -> tuple[str | None, str | None]:
     if (registration is None):
         return (None, None)
     
     # Check if we have it cached
     if registration in photo_lookup_cache:
-        cached_photo_url, cached_photo_credit, cached_timestamp = photo_lookup_cache[registration]
+        cached_photo_file_name, cached_photo_credit, cached_timestamp = photo_lookup_cache[registration]
         # Check if the cached entry is older than 24 hours
         if (datetime.now() - cached_timestamp).total_seconds() < 24 * 3600:
-            return (cached_photo_url, cached_photo_credit)
+            return (cached_photo_file_name, cached_photo_credit)
         
     # If not cached or cache is stale, fetch from the API
     lookup_url = f"https://api.planespotters.net/pub/photos/reg/{registration}"
@@ -163,9 +184,11 @@ def get_photo_for_registration(registration: str | None) -> tuple[str | None, st
     large_thumbnail_url = recent_photo.get("thumbnail_large", {}).get("src", None)
     resolved_url = large_thumbnail_url or thumbnail_url or None
 
-    photo_lookup_cache[registration] = (resolved_url, credit, datetime.now())
-    print(f"Fetched photo for registration {registration}: URL={resolved_url}, Credit={credit}")
-    return (resolved_url, credit)
+    downloaded_photo_path = download_photo(resolved_url) if resolved_url else None
+
+    photo_lookup_cache[registration] = (downloaded_photo_path, credit, datetime.now())
+    print(f"Fetched photo for registration {registration}: URL={resolved_url}, Credit={credit}, WrittenTo={downloaded_photo_path}")
+    return (downloaded_photo_path, credit)
 
 def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
     if not isinstance(plane_data_json, dict):
