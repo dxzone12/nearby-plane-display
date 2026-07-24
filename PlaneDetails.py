@@ -14,5 +14,5 @@ class PlaneDetails(NamedTuple):
     pos_received_ago: int
     plane_seen_ago: int
     route: str
-    image_url: str
+    image_file_name: str
     image_credit: str

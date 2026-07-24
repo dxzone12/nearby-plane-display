@@ -214,7 +214,7 @@ def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
         airline = lookup_airline_local_db(normalised_callsign, airline)
     
     registration = closest_plane.get("r", None)
-    image_url, image_credit = get_photo_for_registration(registration)
+    image_file_name, image_credit = get_photo_for_registration(registration)
 
     return PlaneDetails(
         call_sign=callsign if callsign is not None else "Unknown",
@@ -230,7 +230,7 @@ def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
         pos_received_ago=closest_plane["seen_pos"],
         plane_seen_ago=closest_plane["seen"],
         route=route if route is not None else "Not Supported Yet",
-        image_url=image_url if image_url is not None else "",
+        image_file_name=image_file_name if image_file_name is not None else "",
         image_credit=f"{image_credit} via planespotters.net" if image_credit is not None else ""
     )
 
