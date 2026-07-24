@@ -3,7 +3,7 @@ import tkinter.ttk as ttk
 from PlaneDetails import PlaneDetails
 
 class PlaneDetailsFrame:
-    def __init__(self, title_frame: ttk.Frame, bottom_frame: ttk.Frame):
+    def __init__(self, title_frame: ttk.Frame, bottom_frame: ttk.Frame, image_frame: ttk.Frame):
         self._title_frame = title_frame
         self._title_frame.columnconfigure(0, weight=1)
         self._title_frame.columnconfigure(1, weight=1)
@@ -17,6 +17,11 @@ class PlaneDetailsFrame:
         self._bottom_frame.columnconfigure(3, weight=1)
         for i in range(4):
             self._bottom_frame.rowconfigure(i, weight=1)
+        
+        # Initialise image frame
+        self._image_frame = image_frame
+        self._image_label = ttk.Label(master=self._image_frame, text="no image found", anchor=tk.CENTER, borderwidth=1, relief=tk.SUNKEN)
+        self._image_label.grid(row=0, column=0, sticky=tk.NSEW)
 
         # Initialise title frame
         ttk.Label(master=self._title_frame, text="Callsign:", anchor=tk.W).grid(row=0, column=0, sticky=tk.NSEW, padx=3)

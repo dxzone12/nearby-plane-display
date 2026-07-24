@@ -265,8 +265,6 @@ def main():
 
     left_frame.columnconfigure(0, weight=1)
     left_frame.rowconfigure(0, weight=1)
-    image_label = ttk.Label(master=left_frame, text="no image found", anchor=tk.CENTER, borderwidth=1, relief=tk.SUNKEN)
-    image_label.grid(row=0, column=0, sticky=tk.NSEW)
 
     right_frame = ttk.Frame(master=window)
     right_frame.grid(row=0, column=1, sticky=tk.NSEW)
@@ -274,7 +272,7 @@ def main():
     bottom_frame = ttk.Frame(master=window)
     bottom_frame.grid(row=1, column=0, columnspan=2, sticky=tk.NSEW)
     
-    details_frame = PlaneDetailsFrame(right_frame, bottom_frame)
+    details_frame = PlaneDetailsFrame(right_frame, bottom_frame, left_frame)
 
     style = ttk.Style(window)
     style.configure("TLabel", font=("helvetica", 20))
