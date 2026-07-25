@@ -76,6 +76,9 @@ class PlaneDetailsFrame:
         self._distance_from_center_label["text"] = ""
         self._last_seen_label["text"] = ""
 
+        image_to_set = self.get_image("")
+        self._image_label.config(image=image_to_set)
+
     def update_details(self, plane_details: PlaneDetails | None):
         if plane_details is None:
             self.empty_details()
