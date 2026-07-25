@@ -10,6 +10,7 @@ from PlaneDetailsFrame import PlaneDetailsFrame
 import re
 from datetime import datetime
 import tempfile
+import os
 
 current_plane_deets: PlaneDetails | None = None
 window: tk.Tk  = tk.Tk()
@@ -157,7 +158,13 @@ def get_photo_for_registration(registration: str | None) -> tuple[str | None, st
         # Check if the cached entry is older than 24 hours
         if (datetime.now() - cached_timestamp).total_seconds() < 24 * 3600:
             return (cached_photo_file_name, cached_photo_credit)
-        
+        else:
+            # Remove stale cache entry
+            (removed_cache_path, _, _) = photo_lookup_cache.pop(registration)
+            # Cleanup the temp file
+            if removed_cache_path is not None and os.path.exists(removed_cache_path):
+                os.remove(removed_cache_path)
+
     # If not cached or cache is stale, fetch from the API
     lookup_url = f"https://api.planespotters.net/pub/photos/reg/{registration}"
     headers = {
