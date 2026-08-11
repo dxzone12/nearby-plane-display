@@ -242,11 +242,15 @@ def get_closest_plain_deets(plane_data_json: dict) -> PlaneDetails | None:
     )
 
 def get_and_update_plane_details(url: str, frame: PlaneDetailsFrame) -> PlaneDetails | None:
-    resp = requests.get(url)
-    response_json = resp.json()
-    current_plane_deets = get_closest_plain_deets(response_json)
-    frame.update_details(current_plane_deets)
-    window.after(1000, get_and_update_plane_details, url, frame)
+    try:
+        resp = requests.get(url)
+        response_json = resp.json()
+        current_plane_deets = get_closest_plain_deets(response_json)
+        frame.update_details(current_plane_deets)
+    except Exception as e:
+        print(f"Error occurred: {e}")
+    finally:
+        window.after(1000, get_and_update_plane_details, url, frame)
 
 def main():
     args = parse_args()
